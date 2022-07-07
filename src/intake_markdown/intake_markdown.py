@@ -5,12 +5,14 @@ class Markdown:
     """This class defines a Markdown object.
     It wraps a markdown string, and provides a html representation for use with Jupyter Notebook.
     """
-    def __init__(self, text):
+    def __init__(self, text, extensions=['fenced_code', 'codehilite']):
         self.text = text
         self.file_data = None
+        self.extensions = extensions
+        
     
     def _repr_html_(self):
-        return markdown(self.text)
+        return markdown(self.text, extensions=self.extensions)
 
     
 class MarkdownSource(DataSource):
