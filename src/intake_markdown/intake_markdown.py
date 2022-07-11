@@ -12,7 +12,12 @@ class Markdown:
         
     
     def _repr_html_(self):
-        return markdown(self.text, extensions=self.extensions)
+        extension_configs = {
+            'codehilite': {
+                'css_class': 'highlight'
+            }
+        }
+        return markdown(self.text, extensions=self.extensions, extension_configs=extension_configs)
 
     
 class MarkdownSource(DataSource):
