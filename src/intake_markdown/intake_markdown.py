@@ -1,25 +1,7 @@
 from intake.source.base import DataSource, Schema
-from markdown import markdown
+from IPython.display import Markdown
 
-class Markdown:
-    """This class defines a Markdown object.
-    It wraps a markdown string, and provides a html representation for use with Jupyter Notebook.
-    """
-    def __init__(self, text, extensions=['fenced_code', 'codehilite']):
-        self.text = text
-        self.file_data = None
-        self.extensions = extensions
-        
-    
-    def _repr_html_(self):
-        extension_configs = {
-            'codehilite': {
-                'css_class': 'highlight'
-            }
-        }
-        return markdown(self.text, extensions=self.extensions, extension_configs=extension_configs)
 
-    
 class MarkdownSource(DataSource):
     """Reads markdown files and writes them to Markdown objects.
     Based on Intake's `textfile` driver 
@@ -35,6 +17,7 @@ class MarkdownSource(DataSource):
 
     def __init__(self, urlpath, text_encoding='utf8',
                  compression=None, metadata=None,
+                 pre="", post="",
                  storage_options=None):
         """
         Parameters
@@ -53,6 +36,12 @@ class MarkdownSource(DataSource):
             Options to pass to the file reader backend, including text-specific
             encoding arguments, and parameters specific to the remote
             file-system driver, if using.
+        pre: str 
+            If given, appends contents before read markdown str before passing to
+            IPython Mardown object constructor
+        post: str 
+            If given, appends contents after read markdown str before passing to
+            IPython Mardown object constructor
         """
         self._urlpath = urlpath
         self._storage_options = storage_options or {}
@@ -61,6 +50,8 @@ class MarkdownSource(DataSource):
         self.compression = compression
         self.mode = 'rt'
         self.encoding = text_encoding
+        self.pre = pre
+        self.post = post
 
         super(MarkdownSource, self).__init__(metadata=metadata)
 
@@ -87,6 +78,7 @@ class MarkdownSource(DataSource):
         self._get_schema()
         file_data = [get_file(f) for f in self._files]
         string = ''.join(file_data)
+        string = self.pre + string + self.post
         md = Markdown(string)
         md.file_data = file_data
         return md

@@ -4,5 +4,8 @@ channels:
 dependencies:
   - python
   - jupyterlab
-  - markdown
-  - Pygments
+  - intake
+  - requests
+  - aiohttp
+  - pip:
+    - ipython
