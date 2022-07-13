@@ -1,5 +1,29 @@
 from intake.source.base import DataSource, Schema
-from IPython.display import Markdown
+from markdown import markdown
+
+with open('styles.css', 'r') as f:
+    default_styles = f.read()
+
+
+class Markdown:
+    def __init__(self, data, extensions=['fenced_code', 'codehilite', 'md_in_html'],
+                 extension_configs={},
+                 pre="", post="", styles=default_styles):
+        self.data = data
+        self.extensions = extensions
+        self.extension_configs = extension_configs
+        self.pre = pre
+        self.post = post
+        self.styles = styles
+
+    def get_markdown(self):
+        return self.pre + self.data + self.post
+
+    def _repr_html_(self):
+        style_html = f"<style>\n{self.styles}\n</style>\n"
+        md = markdown(self.get_markdown(), extensions=self.extensions,
+                        extension_configs=self.extension_configs)
+        return style_html + md
 
 
 class MarkdownSource(DataSource):
@@ -17,8 +41,7 @@ class MarkdownSource(DataSource):
 
     def __init__(self, urlpath, text_encoding='utf8',
                  compression=None, metadata=None,
-                 pre="", post="",
-                 storage_options=None):
+                 md_kwargs={}, storage_options=None):
         """
         Parameters
         ----------
@@ -50,8 +73,7 @@ class MarkdownSource(DataSource):
         self.compression = compression
         self.mode = 'rt'
         self.encoding = text_encoding
-        self.pre = pre
-        self.post = post
+        self.md_kwargs = md_kwargs
 
         super(MarkdownSource, self).__init__(metadata=metadata)
 
@@ -78,9 +100,7 @@ class MarkdownSource(DataSource):
         self._get_schema()
         file_data = [get_file(f) for f in self._files]
         string = ''.join(file_data)
-        string = self.pre + string + self.post
-        md = Markdown(string)
-        md.file_data = file_data
+        md = Markdown(string, **self.md_kwargs)
         return md
 
 
@@ -89,7 +109,3 @@ def get_file(f):
     with f as f:
         d = f.read()
     return d
-        
-        
-        
-        

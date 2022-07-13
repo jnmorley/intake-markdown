@@ -16,7 +16,8 @@ dependencies = [
     "intake",
     "ipython",
     "requests",
-    "aiohttp"
+    "aiohttp",
+    "Pygments"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
