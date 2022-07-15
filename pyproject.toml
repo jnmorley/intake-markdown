@@ -18,6 +18,7 @@ dependencies = [
     "requests",
     "aiohttp",
     "Pygments",
+    "beautifulsoup4",
     "markdown"
 ]
 classifiers = [

@@ -9,3 +9,4 @@ dependencies:
   - aiohttp
   - markdown
   - Pygments
+  - beautifulsoup4

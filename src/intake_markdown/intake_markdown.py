@@ -1,101 +1,64 @@
 from intake.source.base import DataSource, Schema
 from markdown import markdown
-
-default_styles = """pre { line-height: 125%; margin: 0; }
-td.linenos pre { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
-span.linenos { color: #000000; background-color: #f0f0f0; padding-left: 5px; padding-right: 5px; }
-td.linenos pre.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-.codehilite .hll { background-color: #ffffcc }
-.codehilite { background: #f8f8f8; }
-.codehilite .c { color: #408080; font-style: italic } /* Comment */
-.codehilite .err { border: 1px solid #FF0000 } /* Error */
-.codehilite .k { color: #008000; font-weight: bold } /* Keyword */
-.codehilite .o { color: #666666 } /* Operator */
-.codehilite .ch { color: #408080; font-style: italic } /* Comment.Hashbang */
-.codehilite .cm { color: #408080; font-style: italic } /* Comment.Multiline */
-.codehilite .cp { color: #BC7A00 } /* Comment.Preproc */
-.codehilite .cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
-.codehilite .c1 { color: #408080; font-style: italic } /* Comment.Single */
-.codehilite .cs { color: #408080; font-style: italic } /* Comment.Special */
-.codehilite .gd { color: #A00000 } /* Generic.Deleted */
-.codehilite .ge { font-style: italic } /* Generic.Emph */
-.codehilite .gr { color: #FF0000 } /* Generic.Error */
-.codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
-.codehilite .gi { color: #00A000 } /* Generic.Inserted */
-.codehilite .go { color: #888888 } /* Generic.Output */
-.codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
-.codehilite .gs { font-weight: bold } /* Generic.Strong */
-.codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
-.codehilite .gt { color: #0044DD } /* Generic.Traceback */
-.codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
-.codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
-.codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
-.codehilite .kp { color: #008000 } /* Keyword.Pseudo */
-.codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
-.codehilite .kt { color: #B00040 } /* Keyword.Type */
-.codehilite .m { color: #666666 } /* Literal.Number */
-.codehilite .s { color: #BA2121 } /* Literal.String */
-.codehilite .na { color: #7D9029 } /* Name.Attribute */
-.codehilite .nb { color: #008000 } /* Name.Builtin */
-.codehilite .nc { color: #0000FF; font-weight: bold } /* Name.Class */
-.codehilite .no { color: #880000 } /* Name.Constant */
-.codehilite .nd { color: #AA22FF } /* Name.Decorator */
-.codehilite .ni { color: #999999; font-weight: bold } /* Name.Entity */
-.codehilite .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
-.codehilite .nf { color: #0000FF } /* Name.Function */
-.codehilite .nl { color: #A0A000 } /* Name.Label */
-.codehilite .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
-.codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
-.codehilite .nv { color: #19177C } /* Name.Variable */
-.codehilite .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
-.codehilite .w { color: #bbbbbb } /* Text.Whitespace */
-.codehilite .mb { color: #666666 } /* Literal.Number.Bin */
-.codehilite .mf { color: #666666 } /* Literal.Number.Float */
-.codehilite .mh { color: #666666 } /* Literal.Number.Hex */
-.codehilite .mi { color: #666666 } /* Literal.Number.Integer */
-.codehilite .mo { color: #666666 } /* Literal.Number.Oct */
-.codehilite .sa { color: #BA2121 } /* Literal.String.Affix */
-.codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
-.codehilite .sc { color: #BA2121 } /* Literal.String.Char */
-.codehilite .dl { color: #BA2121 } /* Literal.String.Delimiter */
-.codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
-.codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
-.codehilite .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
-.codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
-.codehilite .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
-.codehilite .sx { color: #008000 } /* Literal.String.Other */
-.codehilite .sr { color: #BB6688 } /* Literal.String.Regex */
-.codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
-.codehilite .ss { color: #19177C } /* Literal.String.Symbol */
-.codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
-.codehilite .fm { color: #0000FF } /* Name.Function.Magic */
-.codehilite .vc { color: #19177C } /* Name.Variable.Class */
-.codehilite .vg { color: #19177C } /* Name.Variable.Global */
-.codehilite .vi { color: #19177C } /* Name.Variable.Instance */
-.codehilite .vm { color: #19177C } /* Name.Variable.Magic */
-.codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */"""
-
+from pygments.formatters import HtmlFormatter
+from bs4 import BeautifulSoup
+from urllib.parse import  urljoin
 
 class Markdown:
-    def __init__(self, data, extensions=['fenced_code', 'codehilite', 'md_in_html'],
+    def __init__(self, data, urlpath=None, extensions=['fenced_code', 'codehilite', 'md_in_html'],
                  extension_configs={},
-                 pre="", post="", styles=default_styles):
+                 pre="", post="", 
+                 formatter_options={'cssclass': "codehilite",
+                                    'style': 'default'},
+                 extra_css=""):
+        """
+        data: str
+            A markdown string
+        urlpath: str
+            url used to resolve relative paths in links and images
+        extensions: list(str)
+            list of extension names to be passed to markdown.markdown to adjust
+            the behavior of markdown parsing.
+            Read more here https://python-markdown.github.io/extensions/
+        extension_config: dict
+            dictionary of configuration used by an extentions 
+            https://python-markdown.github.io/reference/
+        pre: str 
+            If given, appends contents before read markdown str before passing to
+            IPython Mardown object constructor
+        post: str 
+            If given, appends contents after read markdown str before passing to
+            IPython Mardown object constructor
+        formatter_options: dict
+            dictionary of options to be passed to Pygments HtmlFormatter object
+        extra_css: str
+            arbitrary css to be applied to the markdown after conversion to html
+        """
         self.data = data
+        self.url = urlpath
         self.extensions = extensions
         self.extension_configs = extension_configs
         self.pre = pre
         self.post = post
-        self.styles = styles
-
-    def get_markdown(self):
+        self.formatter = HtmlFormatter(**formatter_options)
+        self.extra_css = extra_css
+        
+    def get_markdown(self,):
         return self.pre + self.data + self.post
 
     def _repr_html_(self):
-        style_html = f"<style>\n{self.styles}\n</style>\n"
-        md = markdown(self.get_markdown(), extensions=self.extensions,
+        style_html = f"<style>\n{self.formatter.get_style_defs()}\n{self.extra_css}\n</style>\n"
+        html = markdown(self.get_markdown(), extensions=self.extensions,
                         extension_configs=self.extension_configs)
-        return style_html + md
+        soup = BeautifulSoup(html, 'html.parser')
+        if urlpath:
+            for img in soup.find_all('img'):
+                if img.get('src'):
+                    img['src'] = urljoin(self.url, img.get('src'))
+            for link in soup.find_all('a'):
+                if link.get('href'):
+                    link['href'] = urljoin(self.url, link.get('href'))
+        return style_html + str(soup)
 
 
 class MarkdownSource(DataSource):
@@ -117,7 +80,7 @@ class MarkdownSource(DataSource):
         """
         Parameters
         ----------
-        urlpath : str or list(str)
+        urlpath : str
             Target files. Can be a glob-path (with "*") and include protocol
             specified (e.g., "s3://"). Can also be a list of absolute paths.
         text_encoding : str
@@ -131,12 +94,8 @@ class MarkdownSource(DataSource):
             Options to pass to the file reader backend, including text-specific
             encoding arguments, and parameters specific to the remote
             file-system driver, if using.
-        pre: str 
-            If given, appends contents before read markdown str before passing to
-            IPython Mardown object constructor
-        post: str 
-            If given, appends contents after read markdown str before passing to
-            IPython Mardown object constructor
+        md_kwargs: dict
+            A dictionary of arguments to be passed to Mardown constructor
         """
         self._urlpath = urlpath
         self._storage_options = storage_options or {}
@@ -172,7 +131,7 @@ class MarkdownSource(DataSource):
         self._get_schema()
         file_data = [get_file(f) for f in self._files]
         string = ''.join(file_data)
-        md = Markdown(string, **self.md_kwargs)
+        md = Markdown(string, self._urlpath, **self.md_kwargs)
         return md
 
 
