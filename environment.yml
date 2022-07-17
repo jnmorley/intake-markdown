@@ -10,3 +10,6 @@ dependencies:
   - markdown
   - Pygments
   - beautifulsoup4
+  - pip:
+    - build
+    - twine

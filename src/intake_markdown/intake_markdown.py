@@ -2,12 +2,13 @@ from intake.source.base import DataSource, Schema
 from markdown import markdown
 from pygments.formatters import HtmlFormatter
 from bs4 import BeautifulSoup
-from urllib.parse import  urljoin
+from urllib.parse import urljoin
 
 class Markdown:
-    def __init__(self, data, urlpath=None, extensions=['fenced_code', 'codehilite', 'md_in_html'],
+    def __init__(self, data, urlpath=None,
+                 extensions=['fenced_code', 'codehilite', 'md_in_html'],
                  extension_configs={},
-                 pre="", post="", 
+                 pre="", post="",
                  formatter_options={'cssclass': "codehilite",
                                     'style': 'default'},
                  extra_css=""):
@@ -21,14 +22,13 @@ class Markdown:
             the behavior of markdown parsing.
             Read more here https://python-markdown.github.io/extensions/
         extension_config: dict
-            dictionary of configuration used by an extentions 
+            dictionary of configuration used by an extentions
             https://python-markdown.github.io/reference/
-        pre: str 
-            If given, appends contents before read markdown str before passing to
-            IPython Mardown object constructor
-        post: str 
-            If given, appends contents after read markdown str before passing to
-            IPython Mardown object constructor
+        pre: str
+            If given, appends contents before read markdown str before passing
+             to mardown object constructor
+        post: str
+            If given, appends contents after read markdown str before passing to mardown object constructor
         formatter_options: dict
             dictionary of options to be passed to Pygments HtmlFormatter object
         extra_css: str
@@ -51,7 +51,7 @@ class Markdown:
         html = markdown(self.get_markdown(), extensions=self.extensions,
                         extension_configs=self.extension_configs)
         soup = BeautifulSoup(html, 'html.parser')
-        if urlpath:
+        if self.url:
             for img in soup.find_all('img'):
                 if img.get('src'):
                     img['src'] = urljoin(self.url, img.get('src'))

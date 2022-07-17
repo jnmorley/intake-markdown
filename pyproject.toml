@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "intake-markdown"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="James Morley", email="jammor966@gmail.com" },
 ]
@@ -23,6 +23,6 @@ dependencies = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: Anaconda License",
+    "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
 ]
